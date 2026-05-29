@@ -33,7 +33,7 @@ class HomeScreen extends ConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 160,
+            expandedHeight: 120,
             pinned: true,
             elevation: 0,
             backgroundColor: Colors.transparent,
@@ -64,28 +64,6 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                )
-              else
-                GestureDetector(
-                  onTap: () => context.go('/paywall'),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 4),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      '⭐ Premium',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
                   ),
                 ),
               IconButton(
