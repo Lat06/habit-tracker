@@ -1,0 +1,52 @@
+{
+  "@@locale": "en",
+  "appTitle": "Habit Tracker",
+  "noHabits": "No habits",
+  "habitsCompleted": "{done} / {total} completed",
+  "@habitsCompleted": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "addFirstHabit": "Add your first habit!",
+  "tapToStart": "Tap + to get started",
+  "newHabit": "New Habit",
+  "editHabit": "Edit",
+  "save": "Save",
+  "tapToChangeIcon": "Tap to change icon",
+  "habitName": "Habit name",
+  "habitNameHint": "E.g. Reading",
+  "habitNameError": "Enter a name",
+  "color": "Color",
+  "statistics": "Statistics",
+  "noHabitsForStats": "No habits to display statistics",
+  "streak": "Streak",
+  "total": "Total",
+  "last30Days": "30 days",
+  "totalDays": "{count} days",
+  "@totalDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settings": "Settings",
+  "notificationsSection": "Notifications",
+  "dailyReminder": "Daily reminder",
+  "dailyReminderSubtitle": "Remind to track habits",
+  "notificationsPermissionDenied": "Allow notifications in Settings",
+  "reminderTime": "Reminder time",
+  "aboutSection": "About",
+  "version": "Version",
+  "appDescription": "Build good habits every day",
+  "chooseIcon": "Choose an icon",
+  "notificationTitle": "🌱 Habits",
+  "notificationBody": "Time to track your habits today!",
+  "deleteHabit": "Delete habit",
+  "percentComplete": "{percent}%",
+  "@percentComplete": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  }
+}

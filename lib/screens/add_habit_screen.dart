@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/habits_provider.dart';
 import '../widgets/emoji_picker_sheet.dart';
 
@@ -71,9 +72,11 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Редагувати' : 'Нова звичка'),
+        title: Text(_isEditing ? l.editHabit : l.newHabit),
         centerTitle: true,
         elevation: 0,
         leading: IconButton(
@@ -83,8 +86,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('Зберегти',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(l.save,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -122,8 +125,10 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
             ),
             const SizedBox(height: 8),
             Center(
-              child: Text('Натисніть щоб змінити іконку',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+              child: Text(
+                l.tapToChangeIcon,
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+              ),
             ),
             const SizedBox(height: 28),
             TextFormField(
@@ -131,8 +136,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               autofocus: !_isEditing,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Назва звички',
-                hintText: 'Наприклад: Читання',
+                labelText: l.habitName,
+                hintText: l.habitNameHint,
                 filled: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -140,11 +145,12 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                 ),
               ),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Введіть назву' : null,
+                  (v == null || v.trim().isEmpty) ? l.habitNameError : null,
             ),
             const SizedBox(height: 28),
-            const Text('Колір',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(l.color,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,

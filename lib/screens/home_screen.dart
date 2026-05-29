@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/habits_provider.dart';
 import '../utils/date_helpers.dart';
 import '../widgets/habit_tile.dart';
@@ -10,13 +12,15 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final habits = ref.watch(habitsProvider);
-    final today = _formatToday();
     final total = habits.length;
     final doneCount =
         habits.where((h) => isCompletedToday(h.completedDates)).length;
     final progress = total == 0 ? 0.0 : doneCount / total;
     final scheme = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).toString();
+    final today = DateFormat('d MMMM', locale).format(DateTime.now());
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -31,13 +35,13 @@ class HomeScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.bar_chart_rounded),
                 onPressed: () => context.go('/stats'),
-                tooltip: 'Статистика',
+                tooltip: l.statistics,
                 color: Colors.white,
               ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () => context.go('/settings'),
-                tooltip: 'Налаштування',
+                tooltip: l.settings,
                 color: Colors.white,
               ),
             ],
@@ -48,10 +52,7 @@ class HomeScreen extends ConsumerWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      scheme.primary,
-                      scheme.tertiary,
-                    ],
+                    colors: [scheme.primary, scheme.tertiary],
                   ),
                 ),
                 child: SafeArea(
@@ -75,8 +76,8 @@ class HomeScreen extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 total == 0
-                                    ? 'Немає звичок'
-                                    : '$doneCount / $total виконано',
+                                    ? l.noHabits
+                                    : l.habitsCompleted(doneCount, total),
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -85,7 +86,7 @@ class HomeScreen extends ConsumerWidget {
                               ),
                             ),
                             if (total > 0)
-              SizedBox(
+                              SizedBox(
                                 width: 52,
                                 height: 52,
                                 child: Stack(
@@ -148,12 +149,12 @@ class HomeScreen extends ConsumerWidget {
                     const Text('🌱', style: TextStyle(fontSize: 64)),
                     const SizedBox(height: 16),
                     Text(
-                      'Додайте першу звичку!',
+                      l.addFirstHabit,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Натисніть + щоб розпочати',
+                      l.tapToStart,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey,
                           ),
@@ -174,28 +175,8 @@ class HomeScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/add'),
         icon: const Icon(Icons.add),
-        label: const Text('Нова звичка'),
+        label: Text(l.newHabit),
       ),
     );
-  }
-
-  String _formatToday() {
-    final now = DateTime.now();
-    const months = [
-      '',
-      'Січня',
-      'Лютого',
-      'Березня',
-      'Квітня',
-      'Травня',
-      'Червня',
-      'Липня',
-      'Серпня',
-      'Вересня',
-      'Жовтня',
-      'Листопада',
-      'Грудня'
-    ];
-    return '${now.day} ${months[now.month]}';
   }
 }

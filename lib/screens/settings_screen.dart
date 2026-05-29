@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timezone/timezone.dart' as tz;
+import '../l10n/app_localizations.dart';
 
 final _notifications = FlutterLocalNotificationsPlugin();
 
@@ -14,8 +15,7 @@ Future<void> initNotifications() async {
     requestSoundPermission: false,
   );
   await _notifications.initialize(
-    const InitializationSettings(
-        android: androidSettings, iOS: iosSettings),
+    const InitializationSettings(android: androidSettings, iOS: iosSettings),
   );
 }
 
@@ -31,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   TimeOfDay _reminderTime = const TimeOfDay(hour: 9, minute: 0);
 
   Future<void> _toggleReminders(bool value) async {
+    final l = AppLocalizations.of(context)!;
     if (value) {
       final ios = _notifications.resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>();
@@ -42,8 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           false;
       if (!granted && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Дозвольте сповіщення в Налаштуваннях')),
+          SnackBar(content: Text(l.notificationsPermissionDenied)),
         );
         return;
       }
@@ -55,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _scheduleReminder(TimeOfDay time) async {
+    final l = AppLocalizations.of(context)!;
     await _notifications.cancelAll();
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
@@ -64,14 +65,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     await _notifications.zonedSchedule(
       0,
-      '🌱 Звички',
-      'Час відмічати звички на сьогодні!',
+      l.notificationTitle,
+      l.notificationBody,
       scheduled,
       const NotificationDetails(
         iOS: DarwinNotificationDetails(),
         android: AndroidNotificationDetails(
           'daily_reminder',
-          'Щоденне нагадування',
+          'Daily reminder',
           importance: Importance.high,
         ),
       ),
@@ -95,9 +96,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Налаштування'),
+        title: Text(l.settings),
         centerTitle: true,
         elevation: 0,
         leading: IconButton(
@@ -107,30 +110,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          const _SectionHeader('Сповіщення'),
+          _SectionHeader(l.notificationsSection),
           SwitchListTile(
-            title: const Text('Щоденне нагадування'),
-            subtitle: const Text('Нагадувати відмічати звички'),
+            title: Text(l.dailyReminder),
+            subtitle: Text(l.dailyReminderSubtitle),
             value: _remindersEnabled,
             onChanged: _toggleReminders,
           ),
           if (_remindersEnabled)
             ListTile(
-              title: const Text('Час нагадування'),
+              title: Text(l.reminderTime),
               trailing: Text(
                 _reminderTime.format(context),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               onTap: _pickTime,
             ),
-          const _SectionHeader('Про додаток'),
+          _SectionHeader(l.aboutSection),
           ListTile(
-            title: const Text('Версія'),
-            trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
+            title: Text(l.version),
+            trailing:
+                const Text('1.0.0', style: TextStyle(color: Colors.grey)),
           ),
           ListTile(
-            title: const Text('Habit Tracker'),
-            subtitle: const Text('Будуй корисні звички щодня'),
+            title: Text(l.appTitle),
+            subtitle: Text(l.appDescription),
           ),
         ],
       ),

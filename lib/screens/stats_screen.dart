@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../providers/habits_provider.dart';
 import '../utils/date_helpers.dart';
@@ -19,6 +20,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final habits = ref.watch(habitsProvider);
     if (_selected == null && habits.isNotEmpty) {
       _selected = habits.first;
@@ -26,7 +28,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Статистика'),
+        title: Text(l.statistics),
         centerTitle: true,
         elevation: 0,
         leading: IconButton(
@@ -35,7 +37,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
         ),
       ),
       body: habits.isEmpty
-          ? const Center(child: Text('Немає звичок для статистики'))
+          ? Center(child: Text(l.noHabitsForStats))
           : Column(
               children: [
                 _HabitSelector(
@@ -47,11 +49,13 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                 if (_selected != null) ...[
                   _StatsHeader(habit: _selected!),
                   TableCalendar(
-                    firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                    firstDay:
+                        DateTime.now().subtract(const Duration(days: 365)),
                     lastDay: DateTime.now(),
                     focusedDay: _focusedDay,
                     onPageChanged: (d) => setState(() => _focusedDay = d),
                     calendarFormat: CalendarFormat.month,
+                    locale: Localizations.localeOf(context).toString(),
                     headerStyle: const HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
@@ -78,7 +82,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     return Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: done ? color.withValues(alpha:0.8) : Colors.transparent,
+        color: done ? color.withValues(alpha: 0.8) : Colors.transparent,
         shape: BoxShape.circle,
         border: isToday && !done
             ? Border.all(color: color, width: 1.5)
@@ -103,6 +107,7 @@ class _StatsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final streak = calculateStreak(habit.completedDates);
     final total = habit.completedDates.length;
     final color = Color(habit.colorValue);
@@ -111,13 +116,14 @@ class _StatsHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [
-          _StatCard(label: 'Стрік', value: '$streak 🔥', color: color),
-          const SizedBox(width: 12),
-          _StatCard(label: 'Всього', value: '$total днів', color: color),
+          _StatCard(label: l.streak, value: '$streak 🔥', color: color),
           const SizedBox(width: 12),
           _StatCard(
-            label: '30 днів',
-            value: _last30(habit.completedDates),
+              label: l.total, value: l.totalDays(total), color: color),
+          const SizedBox(width: 12),
+          _StatCard(
+            label: l.last30Days,
+            value: _last30Percent(habit.completedDates),
             color: color,
           ),
         ],
@@ -125,7 +131,7 @@ class _StatsHeader extends StatelessWidget {
     );
   }
 
-  String _last30(List<String> dates) {
+  String _last30Percent(List<String> dates) {
     int count = 0;
     final now = DateTime.now();
     for (int i = 0; i < 30; i++) {
@@ -152,7 +158,7 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withValues(alpha:0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -197,7 +203,8 @@ class _HabitSelector extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
                     ? Color(h.colorValue)
