@@ -37,7 +37,35 @@ class HomeScreen extends ConsumerWidget {
             elevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
-              if (!isPremium)
+              if (isPremium)
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 10, horizontal: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.5)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('⭐', style: TextStyle(fontSize: 12)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Premium',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
                 GestureDetector(
                   onTap: () => context.go('/paywall'),
                   child: Container(
