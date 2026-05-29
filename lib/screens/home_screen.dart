@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/habits_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../utils/date_helpers.dart';
+import '../widgets/banner_ad_widget.dart';
 import '../widgets/habit_tile.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -268,6 +269,7 @@ class HomeScreen extends ConsumerWidget {
             ),
         ],
       ),
+      bottomNavigationBar: isPremium ? null : const BannerAdWidget(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => canAddHabit
             ? context.go('/add')
