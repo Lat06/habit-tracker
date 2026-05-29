@@ -1,0 +1,74 @@
+{
+  "identifier" : "StoreKitTest",
+  "nonConsumableProducts" : [],
+  "nonRenewingSubscriptionProducts" : [],
+  "settings" : {
+    "_applicationInternalID" : "123456789",
+    "_developerTeamID" : "",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+      "localizations" : [],
+      "name" : "Premium",
+      "performancePriceID" : "",
+      "subscriptions" : [
+        {
+          "adClientOptIn" : false,
+          "availability" : "publicAvailable",
+          "familySharable" : false,
+          "groupNumber" : 1,
+          "internalID" : "11111111-1111-1111-1111-111111111111",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Необмежені звички, без реклами",
+              "displayName" : "Monthly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Необмежені звички, без реклами",
+              "displayName" : "Місячна підписка",
+              "locale" : "uk_UA"
+            }
+          ],
+          "productID" : "com.vibecoding.habittracker.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Premium",
+          "subscriptionGroupID" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adClientOptIn" : false,
+          "availability" : "publicAvailable",
+          "familySharable" : false,
+          "groupNumber" : 2,
+          "internalID" : "22222222-2222-2222-2222-222222222222",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Необмежені звички, без реклами — найвигідніше",
+              "displayName" : "Annual Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Необмежені звички, без реклами — найвигідніше",
+              "displayName" : "Річна підписка",
+              "locale" : "uk_UA"
+            }
+          ],
+          "productID" : "com.vibecoding.habittracker.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual Premium",
+          "subscriptionGroupID" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
