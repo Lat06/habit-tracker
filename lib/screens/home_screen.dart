@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../config/revenue_cat_config.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/habits_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../utils/date_helpers.dart';
 import '../widgets/habit_tile.dart';
 
@@ -14,6 +16,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final habits = ref.watch(habitsProvider);
+    final isPremium = ref.watch(subscriptionProvider);
     final total = habits.length;
     final doneCount =
         habits.where((h) => isCompletedToday(h.completedDates)).length;
@@ -21,6 +24,8 @@ class HomeScreen extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
     final today = DateFormat('d MMMM', locale).format(DateTime.now());
+    final canAddHabit =
+        isPremium || total < RevenueCatConfig.freeHabitLimit;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -32,6 +37,28 @@ class HomeScreen extends ConsumerWidget {
             elevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
+              if (!isPremium)
+                GestureDetector(
+                  onTap: () => context.go('/paywall'),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      '⭐ Premium',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
               IconButton(
                 icon: const Icon(Icons.bar_chart_rounded),
                 onPressed: () => context.go('/stats'),
@@ -140,6 +167,47 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
+          // Free tier banner
+          if (!isPremium)
+            SliverToBoxAdapter(
+              child: GestureDetector(
+                onTap: () => context.go('/paywall'),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('⭐', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Безкоштовно: $total / ${RevenueCatConfig.freeHabitLimit} звичок',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.amber.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Upgrade →',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.amber.shade800,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           if (habits.isEmpty)
             SliverFillRemaining(
               child: Center(
@@ -173,9 +241,13 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/add'),
-        icon: const Icon(Icons.add),
-        label: Text(l.newHabit),
+        onPressed: () => canAddHabit
+            ? context.go('/add')
+            : context.go('/paywall'),
+        icon: Icon(canAddHabit ? Icons.add : Icons.lock_outline),
+        label: Text(canAddHabit ? l.newHabit : 'Premium'),
+        backgroundColor: canAddHabit ? null : Colors.amber.shade400,
+        foregroundColor: canAddHabit ? null : Colors.black87,
       ),
     );
   }
