@@ -241,6 +241,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 );
               },
             ),
+          // Debug секція — тільки для тестування
+          const _SectionHeader('🧪 Тест'),
+          if (isPremium)
+            ListTile(
+              leading: const Icon(Icons.bug_report, color: Colors.orange),
+              title: const Text('Деактивувати Premium (тест)'),
+              onTap: () => ref
+                  .read(subscriptionProvider.notifier)
+                  .debugDeactivatePremium(),
+            )
+          else
+            ListTile(
+              leading: const Icon(Icons.bug_report, color: Colors.orange),
+              title: const Text('Активувати Premium (тест)'),
+              onTap: () => ref
+                  .read(subscriptionProvider.notifier)
+                  .debugActivatePremium(),
+            ),
         ],
       ),
     );

@@ -16,6 +16,10 @@ class SubscriptionNotifier extends StateNotifier<bool> {
     _restoreOnLaunch();
   }
 
+  // Тільки для тестування — симулює покупку без StoreKit
+  void debugActivatePremium() => state = true;
+  void debugDeactivatePremium() => state = false;
+
   Future<void> _restoreOnLaunch() async {
     try {
       await InAppPurchase.instance.restorePurchases();

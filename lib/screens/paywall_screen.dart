@@ -227,6 +227,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                                       fontSize: 11,
                                       color: Colors.red.shade400),
                                 ),
+                                const SizedBox(height: 20),
+                                // Debug кнопка — тільки для тестування UI
+                                OutlinedButton.icon(
+                                  icon: const Icon(Icons.bug_report, size: 16),
+                                  label: const Text('🧪 Тест: Активувати Premium'),
+                                  onPressed: () {
+                                    ref
+                                        .read(subscriptionProvider.notifier)
+                                        .debugActivatePremium();
+                                    context.go('/');
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.grey.shade600,
+                                    side: BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                ),
                               ],
                             ),
                           )
