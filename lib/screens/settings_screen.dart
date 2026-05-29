@@ -17,7 +17,7 @@ Future<void> initNotifications() async {
     requestSoundPermission: false,
   );
   await _notifications.initialize(
-    const InitializationSettings(android: androidSettings, iOS: iosSettings),
+    settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
   );
 }
 
@@ -66,11 +66,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       scheduled = scheduled.add(const Duration(days: 1));
     }
     await _notifications.zonedSchedule(
-      0,
-      l.notificationTitle,
-      l.notificationBody,
-      scheduled,
-      const NotificationDetails(
+      id: 0,
+      title: l.notificationTitle,
+      body: l.notificationBody,
+      scheduledDate: scheduled,
+      notificationDetails: const NotificationDetails(
         iOS: DarwinNotificationDetails(),
         android: AndroidNotificationDetails(
           'daily_reminder',
@@ -79,8 +79,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
