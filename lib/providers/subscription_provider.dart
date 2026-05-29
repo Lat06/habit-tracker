@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import '../config/revenue_cat_config.dart';
+import '../config/subscription_config.dart';
 
 final subscriptionProvider =
     StateNotifierProvider<SubscriptionNotifier, bool>((ref) {
@@ -30,7 +30,7 @@ class SubscriptionNotifier extends StateNotifier<bool> {
     for (final p in purchases) {
       if (p.status == PurchaseStatus.purchased ||
           p.status == PurchaseStatus.restored) {
-        if (RevenueCatConfig.allProductIds.contains(p.productID)) {
+        if (SubscriptionConfig.allProductIds.contains(p.productID)) {
           state = true;
         }
         if (p.pendingCompletePurchase) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../config/revenue_cat_config.dart';
+import '../config/subscription_config.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/habits_provider.dart';
 import '../providers/subscription_provider.dart';
@@ -25,7 +25,7 @@ class HomeScreen extends ConsumerWidget {
     final locale = Localizations.localeOf(context).toString();
     final today = DateFormat('d MMMM', locale).format(DateTime.now());
     final canAddHabit =
-        isPremium || total < RevenueCatConfig.freeHabitLimit;
+        isPremium || total < SubscriptionConfig.freeHabitLimit;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -215,7 +215,7 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Безкоштовно: $total / ${RevenueCatConfig.freeHabitLimit} звичок',
+                          'Безкоштовно: $total / ${SubscriptionConfig.freeHabitLimit} звичок',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.amber.shade900,

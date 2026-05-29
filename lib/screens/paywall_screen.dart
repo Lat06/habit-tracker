@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import '../config/revenue_cat_config.dart';
+import '../config/subscription_config.dart';
 import '../providers/subscription_provider.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -36,7 +36,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         return;
       }
       final response = await InAppPurchase.instance
-          .queryProductDetails(RevenueCatConfig.allProductIds);
+          .queryProductDetails(SubscriptionConfig.allProductIds);
 
       if (response.error != null) {
         setState(() {
@@ -52,7 +52,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       setState(() {
         _products = products;
         _selected = products.firstWhere(
-          (p) => p.id == RevenueCatConfig.productAnnual,
+          (p) => p.id == SubscriptionConfig.productAnnual,
           orElse: () => products.first,
         );
         _loading = false;
@@ -252,7 +252,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                             child: Column(
                               children: _products.map((product) {
                                 final isAnnual = product.id ==
-                                    RevenueCatConfig.productAnnual;
+                                    SubscriptionConfig.productAnnual;
                                 final isSelected =
                                     _selected?.id == product.id;
                                 return Padding(
@@ -394,7 +394,7 @@ class _PriceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isAnnual = product.id == RevenueCatConfig.productAnnual;
+    final isAnnual = product.id == SubscriptionConfig.productAnnual;
     final period = isAnnual ? 'на рік' : 'на місяць';
 
     return GestureDetector(
