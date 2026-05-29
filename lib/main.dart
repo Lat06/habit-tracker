@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'config/revenue_cat_config.dart';
 import 'l10n/app_localizations.dart';
 import 'models/habit.dart';
 import 'router.dart';
@@ -19,10 +17,6 @@ void main() async {
 
   tz.initializeTimeZones();
   await initNotifications();
-
-  await Purchases.configure(
-    PurchasesConfiguration(RevenueCatConfig.apiKey),
-  );
 
   runApp(const ProviderScope(child: HabitTrackerApp()));
 }

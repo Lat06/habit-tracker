@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import '../config/revenue_cat_config.dart';
 import '../providers/subscription_provider.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -12,80 +13,92 @@ class PaywallScreen extends ConsumerStatefulWidget {
 }
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
-  Offering? _offering;
-  Package? _selectedPackage;
+  List<ProductDetails> _products = [];
+  ProductDetails? _selected;
   bool _loading = true;
   bool _purchasing = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadOfferings();
+    _loadProducts();
   }
 
-  Future<void> _loadOfferings() async {
+  Future<void> _loadProducts() async {
     try {
-      final offerings = await Purchases.getOfferings();
-      final current = offerings.current;
-      if (current != null && mounted) {
+      final available = await InAppPurchase.instance.isAvailable();
+      if (!available) {
         setState(() {
-          _offering = current;
-          _selectedPackage = current.annual ?? current.monthly;
           _loading = false;
+          _errorMessage = 'App Store недоступний на цьому пристрої';
         });
+        return;
       }
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      final response = await InAppPurchase.instance
+          .queryProductDetails(RevenueCatConfig.allProductIds);
+
+      if (response.error != null) {
+        setState(() {
+          _loading = false;
+          _errorMessage = response.error!.message;
+        });
+        return;
+      }
+
+      final products = response.productDetails
+        ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+
+      setState(() {
+        _products = products;
+        _selected = products.firstWhere(
+          (p) => p.id == RevenueCatConfig.productAnnual,
+          orElse: () => products.first,
+        );
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _errorMessage = e.toString();
+      });
     }
   }
 
   Future<void> _purchase() async {
-    if (_selectedPackage == null) return;
+    if (_selected == null) return;
     setState(() => _purchasing = true);
     try {
-      final success =
-          await ref.read(subscriptionProvider.notifier).purchase(_selectedPackage!);
-      if (mounted) {
-        if (success) {
-          context.go('/');
-        } else {
-          setState(() => _purchasing = false);
-        }
-      }
+      await ref.read(subscriptionProvider.notifier).purchase(_selected!);
     } catch (e) {
       if (mounted) {
         setState(() => _purchasing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
+      return;
     }
+    if (mounted) setState(() => _purchasing = false);
   }
 
   Future<void> _restore() async {
     setState(() => _purchasing = true);
-    final restored =
-        await ref.read(subscriptionProvider.notifier).restore();
-    if (mounted) {
-      setState(() => _purchasing = false);
-      if (restored) {
-        context.go('/');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Активних підписок не знайдено')),
-        );
-      }
-    }
+    await ref.read(subscriptionProvider.notifier).restore();
+    if (mounted) setState(() => _purchasing = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = ref.watch(subscriptionProvider);
+    if (isPremium) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/'));
+    }
+
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Gradient background
           Container(
             height: 280,
             decoration: BoxDecoration(
@@ -99,7 +112,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Close button
                 Align(
                   alignment: Alignment.topRight,
                   child: IconButton(
@@ -112,7 +124,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     child: Column(
                       children: [
                         const SizedBox(height: 8),
-                        // Icon
                         Container(
                           width: 80,
                           height: 80,
@@ -127,9 +138,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                               ),
                             ],
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Text('🌱',
-                                style: const TextStyle(fontSize: 40)),
+                                style: TextStyle(fontSize: 40)),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -150,8 +161,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-
-                        // Feature cards
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 20),
                           padding: const EdgeInsets.all(20),
@@ -166,8 +175,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                               ),
                             ],
                           ),
-                          child: Column(
-                            children: const [
+                          child: const Column(
+                            children: [
                               _FeatureRow(
                                 emoji: '♾️',
                                 title: 'Необмежені звички',
@@ -194,46 +203,58 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
-                        // Price packages
                         if (_loading)
                           const Padding(
                             padding: EdgeInsets.all(32),
                             child: CircularProgressIndicator(),
                           )
-                        else if (_offering != null) ...[
+                        else if (_errorMessage != null)
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               children: [
-                                if (_offering!.annual != null)
-                                  _PriceCard(
-                                    package: _offering!.annual!,
-                                    isSelected: _selectedPackage?.packageType ==
-                                        PackageType.annual,
-                                    badge: 'Вигідніше',
-                                    onTap: () => setState(
-                                        () => _selectedPackage = _offering!.annual),
-                                  ),
-                                const SizedBox(height: 12),
-                                if (_offering!.monthly != null)
-                                  _PriceCard(
-                                    package: _offering!.monthly!,
-                                    isSelected: _selectedPackage?.packageType ==
-                                        PackageType.monthly,
-                                    onTap: () => setState(
-                                        () => _selectedPackage = _offering!.monthly),
-                                  ),
+                                Text(
+                                  'Не вдалося завантажити пропозиції.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _errorMessage!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.red.shade400),
+                                ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 24),
+                          )
+                        else ...[
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: _products.map((product) {
+                                final isAnnual = product.id ==
+                                    RevenueCatConfig.productAnnual;
+                                final isSelected =
+                                    _selected?.id == product.id;
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(bottom: 12),
+                                  child: _PriceCard(
+                                    product: product,
+                                    isSelected: isSelected,
+                                    badge: isAnnual ? 'Вигідніше' : null,
+                                    onTap: () =>
+                                        setState(() => _selected = product),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: SizedBox(
                               width: double.infinity,
                               height: 54,
@@ -262,18 +283,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                               ),
                             ),
                           ),
-                        ] else
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text(
-                              'Не вдалося завантажити пропозиції.\nПеревір підключення до інтернету.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey.shade600),
-                            ),
-                          ),
-
+                        ],
                         const SizedBox(height: 16),
-                        // Restore & close
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -287,15 +298,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                               onPressed: () => context.go('/'),
                               child: Text(
                                 'Залишитись безкоштовно',
-                                style:
-                                    TextStyle(color: Colors.grey.shade500),
+                                style: TextStyle(color: Colors.grey.shade500),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Підписка поновлюється автоматично. Скасувати можна в App Store.',
+                          'Підписка поновлюється автоматично. Скасувати в App Store.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 11, color: Colors.grey.shade400),
@@ -353,13 +363,13 @@ class _FeatureRow extends StatelessWidget {
 }
 
 class _PriceCard extends StatelessWidget {
-  final Package package;
+  final ProductDetails product;
   final bool isSelected;
   final String? badge;
   final VoidCallback onTap;
 
   const _PriceCard({
-    required this.package,
+    required this.product,
     required this.isSelected,
     required this.onTap,
     this.badge,
@@ -368,16 +378,15 @@ class _PriceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final price = package.storeProduct.priceString;
-    final period = package.packageType == PackageType.annual
-        ? 'на рік'
-        : 'на місяць';
+    final isAnnual = product.id == RevenueCatConfig.productAnnual;
+    final period = isAnnual ? 'на рік' : 'на місяць';
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected
               ? scheme.primaryContainer
@@ -398,8 +407,9 @@ class _PriceCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isSelected ? scheme.primary : Colors.transparent,
                 border: Border.all(
-                  color:
-                      isSelected ? scheme.primary : Colors.grey.shade400,
+                  color: isSelected
+                      ? scheme.primary
+                      : Colors.grey.shade400,
                   width: 2,
                 ),
               ),
@@ -415,9 +425,7 @@ class _PriceCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        package.packageType == PackageType.annual
-                            ? 'Річна підписка'
-                            : 'Місячна підписка',
+                        isAnnual ? 'Річна підписка' : 'Місячна підписка',
                         style: const TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 15),
                       ),
@@ -443,7 +451,7 @@ class _PriceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$price $period',
+                    '${product.price} $period',
                     style: TextStyle(
                         fontSize: 13, color: Colors.grey.shade500),
                   ),

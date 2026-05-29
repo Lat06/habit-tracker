@@ -1,10 +1,7 @@
 class RevenueCatConfig {
-  // Отримай ключ на app.revenuecat.com → Projects → Your App → API Keys
-  static const apiKey = 'YOUR_REVENUECAT_API_KEY';
-
-  // Назва entitlement в RevenueCat (має збігатися з тим що ти створив)
-  static const entitlementId = 'premium';
-
-  // Максимум звичок для безкоштовних користувачів
+  static const productMonthly = 'com.vibecoding.habittracker.monthly';
+  static const productAnnual  = 'com.vibecoding.habittracker.annual';
   static const freeHabitLimit = 3;
+
+  static const allProductIds = {productMonthly, productAnnual};
 }

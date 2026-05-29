@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import '../config/revenue_cat_config.dart';
 
 final subscriptionProvider =
@@ -8,42 +9,51 @@ final subscriptionProvider =
 });
 
 class SubscriptionNotifier extends StateNotifier<bool> {
+  StreamSubscription<List<PurchaseDetails>>? _sub;
+
   SubscriptionNotifier() : super(false) {
-    _checkStatus();
+    _sub = InAppPurchase.instance.purchaseStream.listen(_onPurchases);
+    _restoreOnLaunch();
   }
 
-  Future<void> _checkStatus() async {
+  Future<void> _restoreOnLaunch() async {
     try {
-      final info = await Purchases.getCustomerInfo();
-      state = _isPremium(info);
-    } catch (_) {
-      state = false;
+      await InAppPurchase.instance.restorePurchases();
+    } catch (_) {}
+  }
+
+  void _onPurchases(List<PurchaseDetails> purchases) {
+    for (final p in purchases) {
+      if (p.status == PurchaseStatus.purchased ||
+          p.status == PurchaseStatus.restored) {
+        if (RevenueCatConfig.allProductIds.contains(p.productID)) {
+          state = true;
+        }
+        if (p.pendingCompletePurchase) {
+          InAppPurchase.instance.completePurchase(p);
+        }
+      } else if (p.status == PurchaseStatus.error) {
+        if (p.pendingCompletePurchase) {
+          InAppPurchase.instance.completePurchase(p);
+        }
+      }
     }
   }
 
-  bool _isPremium(CustomerInfo info) =>
-      info.entitlements.all[RevenueCatConfig.entitlementId]?.isActive ?? false;
-
-  Future<bool> purchase(Package package) async {
-    try {
-      final info = await Purchases.purchasePackage(package);
-      state = _isPremium(info);
-      return state;
-    } on PurchasesErrorCode catch (e) {
-      if (e == PurchasesErrorCode.purchaseCancelledError) return false;
-      rethrow;
-    }
+  Future<bool> purchase(ProductDetails product) async {
+    final available = await InAppPurchase.instance.isAvailable();
+    if (!available) return false;
+    final param = PurchaseParam(productDetails: product);
+    return InAppPurchase.instance.buyNonConsumable(purchaseParam: param);
   }
 
-  Future<bool> restore() async {
-    try {
-      final info = await Purchases.restorePurchases();
-      state = _isPremium(info);
-      return state;
-    } catch (_) {
-      return false;
-    }
+  Future<void> restore() async {
+    await InAppPurchase.instance.restorePurchases();
   }
 
-  Future<void> refresh() => _checkStatus();
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 }

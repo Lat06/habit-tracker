@@ -233,14 +233,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: const Text('Відновити покупки'),
               onTap: () async {
                 final messenger = ScaffoldMessenger.of(context);
-                final restored = await ref
-                    .read(subscriptionProvider.notifier)
-                    .restore();
+                await ref.read(subscriptionProvider.notifier).restore();
                 messenger.showSnackBar(
-                  SnackBar(
-                    content: Text(restored
-                        ? 'Premium відновлено!'
-                        : 'Активних підписок не знайдено'),
+                  const SnackBar(
+                    content: Text('Перевірка покупок виконана'),
                   ),
                 );
               },

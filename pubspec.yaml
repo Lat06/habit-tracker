@@ -39,7 +39,7 @@ dependencies:
   go_router: ^14.2.7
   timezone: ^0.9.4
   intl: ^0.20.2
-  purchases_flutter: ^8.0.0
+  in_app_purchase: ^3.2.0
 
 dev_dependencies:
   flutter_test:
